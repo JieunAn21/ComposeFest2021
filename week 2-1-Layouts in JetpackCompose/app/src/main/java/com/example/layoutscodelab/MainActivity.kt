@@ -20,8 +20,13 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.AlignmentLine
+import androidx.compose.ui.layout.FirstBaseline
+import androidx.compose.ui.layout.Layout
+import androidx.compose.ui.layout.layout
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import coil.compose.rememberImagePainter
 import com.example.layoutscodelab.ui.theme.LayoutsCodelabTheme
@@ -34,10 +39,79 @@ class MainActivity : ComponentActivity() {
             LayoutsCodelabTheme {
                 // A surface container using the 'background' color from the theme
                 Surface(color = MaterialTheme.colors.background) {
-                    ScrollingList()
+                    Text("Hi there!", Modifier.firstBaselineToTop(32.dp))
                 }
             }
         }
+    }
+}
+
+@Composable
+fun MyOwnColumn(
+    modifier: Modifier = Modifier,
+    content: @Composable () -> Unit
+) {
+    Layout(
+        modifier = modifier,
+        content = content
+    ) { measurables, constraints ->
+        //하위 뷰들을 더 제약하지 말고 주어진 제약조건을으로 측정한다
+        //측정된 자식 리스트
+        val placeables = measurables.map { measurable ->
+            //각 자식 측정
+            measurable.measure(constraints)
+        }
+
+        //y 좌표값 추적
+        var yPosition = 0
+
+        //레이아웃 사이즈를 가능한 크게 설정
+        layout(constraints.maxWidth, constraints.maxHeight) {
+            //자식 배치
+            placeables.forEach { placeable ->
+                //아이템을 화면에 배치
+                placeable.placeRelative(x = 0, y = yPosition)
+
+                //y 좌표 기록
+                yPosition += placeable.height
+            }
+        }
+    }
+}
+
+fun Modifier.firstBaselineToTop(
+    firstBaselineToTop: Dp
+) = this.then(
+    layout { measurable, constraints ->
+        val placeable = measurable.measure(constraints)
+
+        //첫번째 베이스라인 체크
+        check(placeable[FirstBaseline] != AlignmentLine.Unspecified)
+        val firstBaseline = placeable[FirstBaseline]
+
+        //패딩을 포함한 컴포저블의 높이 - 첫번째 베이스라인
+        val placeableY = firstBaselineToTop.roundToPx() - firstBaseline
+        val height = placeable.height + placeableY
+        layout(placeable.width, height) {
+            // 컴포저블의 위치
+            placeable.placeRelative(0, placeableY)
+        }
+    }
+)
+
+@Preview
+@Composable
+fun TextWithPaddingToBaselinePreview() {
+    LayoutsCodelabTheme {
+        Text("Hi there!", Modifier.firstBaselineToTop(32.dp))
+    }
+}
+
+@Preview
+@Composable
+fun TextWithNormalPaddingPreview() {
+    LayoutsCodelabTheme {
+        Text("Hi there!", Modifier.padding(top = 32.dp))
     }
 }
 
@@ -114,9 +188,11 @@ fun LayoutsCodelab() {
 
 @Composable
 fun BodyContent(modifier: Modifier = Modifier) {
-    Column(modifier = modifier) {
-        Text(text = "Hi there!")
-        Text(text = "Thanks for going through the Layouts codelab")
+    MyOwnColumn(modifier.padding(8.dp)) {
+        Text("MyOwnColumn")
+        Text("places items")
+        Text("vertically.")
+        Text("We've done it by hand!")
     }
 }
 
