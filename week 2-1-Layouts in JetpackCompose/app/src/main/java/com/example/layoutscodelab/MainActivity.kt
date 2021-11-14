@@ -54,6 +54,43 @@ val topics = listOf(
 )
 
 @Composable
+fun TwoTexts(modifier: Modifier = Modifier, text1: String, text2: String) {
+    Row(modifier.height(IntrinsicSize.Min)) {
+        Text(
+            text1,
+            Modifier
+                .weight(1f)
+                .padding(start = 4.dp)
+                .wrapContentWidth(Alignment.Start)
+        )
+
+        Divider(
+            color = Black, modifier = Modifier
+                .fillMaxHeight()
+                .width(1.dp)
+        )
+
+        Text(
+            text2,
+            Modifier
+                .weight(1f)
+                .padding(end = 4.dp)
+                .wrapContentWidth(Alignment.End)
+        )
+    }
+}
+
+@Preview
+@Composable
+fun TwoTextsPreview() {
+    LayoutsCodelabTheme {
+        Surface {
+            TwoTexts(text1 = "Hi", text2 = "there")
+        }
+    }
+}
+
+@Composable
 fun DecoupledConstraintLayout() {
     BoxWithConstraints {
         val constraints = if (maxWidth < maxHeight) {
