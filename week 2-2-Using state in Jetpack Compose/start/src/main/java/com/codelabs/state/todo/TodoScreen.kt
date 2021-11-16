@@ -110,6 +110,13 @@ fun TodoRow(
 @Composable
 fun TodoItemInput(onItemComplete: (TodoItem) -> Unit) {
     val (text, setText) = remember { mutableStateOf("") }
+    val (icon, setIcon) = remember { mutableStateOf(TodoIcon.Default) }
+    val iconVisible = text.isNotBlank()
+    val submit = {
+        onItemComplete(TodoItem(text, icon)) // onItemComplete 이벤트 호출
+        setIcon(TodoIcon.Default) //아이콘 초기화
+        setText("") //텍스트 초기화
+    }
 
     Column {
         Row(
@@ -117,29 +124,27 @@ fun TodoItemInput(onItemComplete: (TodoItem) -> Unit) {
                 .padding(horizontal = 16.dp)
                 .padding(top = 16.dp)
         ) {
-            TodoInputTextField(
+            TodoInputText(
                 text = text,
                 onTextChange = setText,
                 modifier = Modifier
                     .weight(1f)
-                    .padding(end = 8.dp)
+                    .padding(end = 8.dp),
+                onImeAction = submit
             )
             TodoEditButton(
-                onClick = {
-                    onItemComplete(TodoItem(text)) // onItemComplete 이벤트 호출
-                    setText("") //텍스트 초기화
-                },
+                onClick = submit,
                 text = "Add",
                 modifier = Modifier.align(Alignment.CenterVertically),
                 enabled = text.isNotBlank() // 텍스트가 비어있지않을때만 활성화
             )
         }
+        if (iconVisible) {
+            AnimatedIconRow(icon, setIcon, Modifier.padding(top = 8.dp))
+        } else {
+            Spacer(modifier = Modifier.height(16.dp))
+        }
     }
-}
-
-@Composable
-fun TodoInputTextField(text: String, onTextChange: (String) -> Unit, modifier: Modifier) {
-    TodoInputText(text, onTextChange, modifier)
 }
 
 private fun randomTint(): Float {
