@@ -137,9 +137,11 @@ fun TodoItemEntryInput(onItemComplete: (TodoItem) -> Unit) {
     val (icon, setIcon) = remember { mutableStateOf(TodoIcon.Default) }
     val iconVisible = text.isNotBlank()
     val submit = {
-        onItemComplete(TodoItem(text, icon)) // onItemComplete 이벤트 호출
-        setIcon(TodoIcon.Default) //아이콘 초기화
-        setText("") //텍스트 초기화
+        if (text.isNotBlank()) {
+            onItemComplete(TodoItem(text, icon)) // onItemComplete 이벤트 호출
+            setIcon(TodoIcon.Default) //아이콘 초기화
+            setText("") //텍스트 초기화
+        }
     }
 
     TodoItemInput(
@@ -150,6 +152,13 @@ fun TodoItemEntryInput(onItemComplete: (TodoItem) -> Unit) {
         iconVisible = iconVisible,
         submit = submit
     )
+    {
+        TodoEditButton(
+            onClick = submit,
+            text = "Add",
+            enabled = text.isNotBlank() // 텍스트가 비어있지않을때만 활성화
+        )
+    }
 }
 
 @Composable
@@ -164,7 +173,26 @@ fun TodoItemInlineEditor(
     icon = item.icon,
     onIconChange = { onEditItemChange(item.copy(icon = it)) },
     iconVisible = true,
-    submit = onEditDone
+    submit = onEditDone,
+    buttonSlot = {
+        Row {
+            val shrinkButtons = Modifier.widthIn(20.dp)
+            TextButton(onClick = onEditDone, modifier = shrinkButtons) {
+                Text(
+                    text = "\uD83D\uDCBE",
+                    textAlign = TextAlign.End,
+                    modifier = Modifier.width(30.dp)
+                )
+            }
+            TextButton(onClick = onRemoveItem, modifier = shrinkButtons) {
+                Text(
+                    text = "❌",
+                    textAlign = TextAlign.End,
+                    modifier = Modifier.width(30.dp)
+                )
+            }
+        }
+    }
 )
 
 
@@ -175,7 +203,8 @@ fun TodoItemInput(
     icon: TodoIcon,
     onIconChange: (TodoIcon) -> Unit,
     iconVisible: Boolean,
-    submit: () -> Unit
+    submit: () -> Unit,
+    buttonSlot: @Composable () -> Unit
 ) {
     Column {
         Row(
@@ -191,12 +220,9 @@ fun TodoItemInput(
                     .padding(end = 8.dp),
                 onImeAction = submit
             )
-            TodoEditButton(
-                onClick = submit,
-                text = "Add",
-                modifier = Modifier.align(Alignment.CenterVertically),
-                enabled = text.isNotBlank() // 텍스트가 비어있지않을때만 활성화
-            )
+
+            Spacer(Modifier.width(8.dp))
+            Box(Modifier.align(Alignment.CenterVertically)) { buttonSlot() }
         }
         if (iconVisible) {
             AnimatedIconRow(icon, onIconChange, Modifier.padding(top = 8.dp))
