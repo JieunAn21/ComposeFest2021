@@ -76,7 +76,7 @@ fun RallyApp() {
 @Composable
 fun RallyNavHost(
     navController: NavHostController,
-    modifier: Modifier
+    modifier: Modifier = Modifier
 ) {
     val accountsName = RallyScreen.Accounts.name
     NavHost(
