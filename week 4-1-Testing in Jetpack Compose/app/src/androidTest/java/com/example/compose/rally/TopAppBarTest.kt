@@ -49,4 +49,20 @@ class TopAppBarTest {
             )
             .assertExists()
     }
+
+    @Test
+    fun rallyTopAppBarTest_actionClickTabs() {
+        var currentScreen = RallyScreen.Bills
+
+        composeTestRule.setContent {
+            RallyApp(currentScreen) { screen -> currentScreen = screen }
+        }
+
+        RallyScreen.values().forEach { screen ->
+            composeTestRule
+                .onNodeWithContentDescription(screen.name)
+                .performClick()
+            assert(currentScreen == screen)
+        }
+    }
 }
